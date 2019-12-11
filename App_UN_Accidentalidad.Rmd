@@ -1,0 +1,531 @@
+---
+title: "Informe Técnico de Accidentalidad"
+author: "Universidad Nacional de Colombia - Especialización en Analítica"
+date: "11/10/2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+Portilla, Estefano <br>
+Restrepo, Juan Esteban <br>
+Sterling, Jhordy <br>
+Vergara, Samir <br>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Instalar paquetes
+# install.packages("Hmisc")
+
+# Librerías usadas en este informe
+
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+library(Hmisc)
+library(proj4)
+library(stringr)
+library(dplyr)
+library(ggthemes)
+
+```
+
+### 1. Introducción
+
+<div style="text-align: justify">
+El presente informe contiene la descripcion de la accidentalidad en la ciudad de Medellín, contemplando registros de accidentes desde el año 2014 hasta mediados de 2019, donde se presenta información relevante como ubicación exacta de cada accidente o tipo de accidente, siendo de gran utilidad al momento de hacer análisis y tomar decisiones referentes a los accidentes en la ciudad de Medellín, los cuales con acciones acertadas pueden disminuir partiendo de la información suministrada.
+
+La ciudad de Medellín, al albergar una población que puede considerarse densa para su extensión, requiere de diversas estrategias para mitigar las diferentes problematicas que afronta cada día, entre ellas el transito vehicular. Teniendo presente que el parque automotor para la ciudad crece cada vez a mayor medida y la adecuación de vias no es suficientemente efectiva, conlleva a generar problemas como lo son los accidentes vehiculares, los cuales deben ser tenidos en cuenta al momento de crear políticas en pro de generar bienestar social, dando a los ciudadanos información de gran interés para transitar en los diferentes sectores de la ciudad.
+
+La información de accidentalidad que contiene el actual informe, no solo permite dar a conocer el comportamiento de los accidentes en la ciudad de Medellin en los ultimos años, esta además brinda bases sobre las cuales se pueden generar nuevas estrategias para mitigar este tipo de riesgos, impactando en lo que concierne a generar bienestar en el transito vehicular para la ciudad de Medellín, y en cierta medida mejorar la movilidad al crear soluciones basadas en datos reales 
+
+<div/>
+
+<br> <!-- Salto(s) de línea HTML -->
+
+```{r echo=FALSE }
+
+```
+
+### 2. Justificación
+
+<div style="text-align: justify">
+
+Para la ciudad de Medellín, se hace necesario un análisis de accidentalidad dada la cantidad de vehículos circulando en la ciudad y el impacto en la movilidad y por ende en la calidad de vida de cada habitante. Actualmente en la ciudad se encuentran en circulación alrededor de 280 mil nuevos vehículos, los cuales fueron matriculados durante el ultimo año, donde aproximadamente el 60% de estos son motos.
+
+Para nadie es ajeno que la probabilidad de accidente de una moto es mucho mayor a la de un carro, y dado el alto porcentaje de estas en la ciudad de Medellin no es extraño que se presenten diversos accidentes cada día donde se encuentran involucrados este tipo de vehiculos, teniendo presente que estos accidentes deben ser mitigados en la medida de lo posible, ya que no solo las motos generan accidentes, por lo cual se hace necesario en primera instancia determinar la ocurrencia de estos y de este modo obtener un panorama general de su comportamiento en la ciudad, generando así una primera visualización y un punto de partida para tomar decisiones respecto a como mitigar la accidentalidad.
+
+La información presentada en el este informe, busca servir como herramienta para aquellos que desean conocer el comportamiento de la accidentalidad en la ciudad de Medellin, ya sea para contribuir a su disminución o como fuente de información para tomar alguna decisión respecto a su propia movilidad. La información suministrada es flexible en cuanto a su usabilidad e intuitiva para su interpretación, sin dejar a un lado su precisión, la cual genera confiabilidad para aquellos que deseen disponer de ella y crear estrategias de acción basados en los presentes resultados.
+
+<div/>
+
+<br> <!-- Salto(s) de línea HTML -->
+
+```{r echo=FALSE}
+
+```
+
+### 3. Objetivos
+
+<div style="text-align: justify">
+
+* Presentar de manera clara y precisa la información de accidentalidad de la ciudad de Medellín, facilitando su interpretación mediante sencillos y prácticos análisis
+
+* Elaborar una aplicación web dinámica de la accidentalidad en Medellín usando herramientas openSource de visualización
+
+* Generar conciencia en los ciudadanos de la ciudad de Medellín acerca de la responsabilidad al transitar en cualquier tipo de vehículo, partiendo de la información de accidentalidad presentada
+
+<div/>
+
+<br> <!-- Salto(s) de línea HTML -->
+
+```{r}
+
+```
+
+### 4. Datos
+
+##### Datos Abiertos de Movilidad - Alcaldía de Medellín
+Los datos de accidentalidad utilizados en este informe corresponden a registros entre 2014 y 2018, los cuales fueron descargados del sitio: [Alcaldía de Medellín - OpenData:  Movilidad](https://geomedellin-m-medellin.opendata.arcgis.com/search?tags=movilidad)
+
+<br>
+
+```{r data, echo=FALSE}
+
+accidentalidad_2014 <- read.csv("Accidentalidad_georreferenciada_2014.csv", header = TRUE, sep = ",", encoding = "UTF-8")
+accidentalidad_2015 <- read.csv("Accidentalidad_georreferenciada_2015.csv", header = TRUE, sep = ",", encoding = "UTF-8")
+accidentalidad_2016 <- read.csv("Accidentalidad_georreferenciada_2016.csv", header = TRUE, sep = ",", encoding = "UTF-8")
+accidentalidad_2017 <- read.csv("Accidentalidad_georreferenciada_2017.csv", header = TRUE, sep = ",", encoding = "UTF-8")
+accidentalidad_2018 <- read.csv("Accidentalidad_georreferenciada_2018.csv", header = TRUE, sep = ",", encoding = "UTF-8")
+accidentalidad_2019 <- read.csv("Accidentalidad_georreferenciada_2019.csv", header = TRUE, sep = ",", encoding = "UTF-8")
+
+all_data <- rbind(accidentalidad_2014,
+                  accidentalidad_2015,
+                  accidentalidad_2016,
+                  accidentalidad_2017,
+                  accidentalidad_2018,
+                  accidentalidad_2019)
+
+
+all_data_variables <- subset(all_data,select = c("HORA","COMUNA","X","Y","CLASE","GRAVEDAD","PERIODO","MES","DIA_NOMBRE","DIA"))
+
+all_data_variables$FECHA <- substr(all_data$FECHA,1,10)
+all_data_variables$FECHA <- as.Date(all_data_variables$FECHA,format = "%Y-%m-%d")
+
+```
+
+
+#### 4.1 Volumetría (Número de accidentes por año y mes)
+En la siguiente tabla se puede apreciar la cantidad de accidentes por año y mes en la ciudad de Medellín:
+<br>
+
+```{r regs_x_year, echo=FALSE}
+all_data_regs <- table(all_data$PERIODO,all_data$MES)
+
+```
+
+```{r volumetria, echo=FALSE}
+all_data_regs %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive", full_width = F), position = "left", font_size = 12) %>%
+  footnote(general = "Archivos fuente del análisis...",
+           number = c("Accidentalidad_georreferenciada_2014.csv; ", 
+                      "Accidentalidad_georreferenciada_2015.csv; ",
+                      "Accidentalidad_georreferenciada_2016.csv; ",
+                      "Accidentalidad_georreferenciada_2017.csv; ",
+                      "Accidentalidad_georreferenciada_2018.csv; ",
+                      "Accidentalidad_georreferenciada_2019.csv; "
+                      ),
+           general_title = "--"
+
+           )
+```
+
+<br>
+```{r echo=FALSE}
+
+```
+
+
+#### 4.2 Enriquecimiento de los datos
+Hemos enriquecido los datos con algunas variables que se pueden determinar desde la fuente de datos original, a continuación se listan:
+
+##### 4.2.1 Variables: LATITUD y LONGITUD
+Variables usadas para georeferenciación, ubicamos la librería proj4 que nos permite convertir las coordenadas geodésicas de la fuente ("X","Y") al Sistema de coordenadas universal transversal de Mercator (UTM): ("LATITUD", "LONGITUD")
+
+```{r lib_proj4}
+#library(proj4)
+
+lib <- "+proj=tmerc +lat_0=4.596200416666666 +lon_0=-74.07750791666666 +k=1 +x_0=1000000 +y_0=1000000 +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
+
+```
+
+
+```{r latitud_longitud, echo=FALSE}
+
+# Source data
+#xy <- data.frame(x=835746.06, y=1189028.44)
+xy <- subset(all_data_variables,select = c("X","Y"))
+
+# Transformed data
+pj <- project(xy, lib, inverse=TRUE)
+
+# latlon <- data.frame(LATITUD=pj$y, LONGITUD=pj$x)
+# print(latlon)
+
+# Agregar LATITUD y LONGITUD a la fuente
+all_data_variables$LATITUD  <- pj$y
+all_data_variables$LONGITUD <- pj$x
+
+# Se aumenta la precisión decimal para validar las cifras
+options(digits=8)
+
+```
+
+<br>
+
+#### 4.3 Limpieza de datos
+En algunas de las variables de análisis hemos detectado que la calidad de los datos no es la deseada, a continuación se listan las transformaciones realizadas a los datos por cada una de las variables:
+
+<br>
+
+##### 4.3.1 Variables: GRAVEDAD y DÍA SEMANA
+Se mejora el formato de los datos, se pasa de MAYÚSCULAS a Mayúscula inicial:
+
+```{r, echo=FALSE}
+
+# Funcion para convertir   a Mayúscula inicial
+firstup <- function(x) {
+  substr(x, 1, 1) <- toupper(substr(x, 1, 1))
+  x
+}
+
+# Formatear campo GRAVEDAD Initcap
+all_data_variables$GRAVEDAD <- as.character(all_data_variables$GRAVEDAD)
+all_data_variables$GRAVEDAD <- tolower(all_data_variables$GRAVEDAD)
+all_data_variables$GRAVEDAD <- firstup(all_data_variables$GRAVEDAD)
+
+# Formatear campo DIA SEMANA Initcap
+all_data_variables$DIA_NOMBRE <- as.character(all_data_variables$DIA_NOMBRE)
+all_data_variables$DIA_NOMBRE <- tolower(all_data_variables$DIA_NOMBRE)
+all_data_variables$DIA_NOMBRE <- firstup(all_data_variables$DIA_NOMBRE)
+
+# Valores únicos de GRAVEDAD
+unique_gravedad <- unique(all_data_variables$GRAVEDAD)
+unique_gravedad <- data.frame(unique_gravedad)
+names (unique_gravedad) = c("GRAVEDAD")
+
+unique_gravedad %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F, position = "left", font_size = 12)
+
+```
+<br>
+
+```{r}
+
+```
+
+##### 4.3.2 Variable: COMUNA
+Aquí construimos una tabla de homologación, con los 85 valores disponibles en esta variable. Se estandariza y se le asigna a cada valor una de las 16 comunas o 5 corregimientos de Medellín. 
+Fuente Wikipedia: [Anexo:Barrios de Medellín](https://es.wikipedia.org/wiki/Anexo:Barrios_de_Medell%C3%Adn)
+<br>
+
+```{r COMUNA, echo=FALSE}
+
+comuna <-table(all_data_variables$COMUNA)
+comuna <-data.frame(comuna)
+names (comuna) = c("COMUNA_ORI", "FREQ")
+
+# Descarga a CSV los datos de comuna para estandarizar los valores a sólo las 16 comunas y 5 corregimientos de Medellín
+write.table(comuna, dec = ".", sep="\t", row.names = FALSE , col.names = TRUE, file = "homo_comuna_to_edit.csv")
+
+```
+
+
+```{r, echo=FALSE}
+homologa_comuna <- read.csv("homologa_comuna.csv", header = TRUE, sep = "\t", encoding = "UTF8")
+homologa_comuna_head <- data.frame(head(homologa_comuna))
+
+homologa_comuna_head  %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F, position = "left", font_size = 12)
+    
+```
+
+<br>
+
+```{r , echo= FALSE}
+
+all_data_variables <- merge(all_data_variables, homologa_comuna, by.x = "COMUNA", by.y="COMUNA_ORI", all.x = TRUE)
+
+
+
+```
+
+
+##### 4.3.3 Variable: CLASE
+Aquí lo que hicimos fue reemplazar los valores: "Caída de Ocupante" por "Caída Ocupante" y "Choque y Atropello" por "Choque"
+<br>
+```{r CLASE, echo=FALSE}
+
+all_data_variables[all_data_variables$CLASE == "Caida Ocupante" | all_data_variables$CLASE == "Caída de Ocupante" ,]$CLASE <- "Caída Ocupante"
+all_data_variables[all_data_variables$CLASE == "Choque y Atropello" | all_data_variables$CLASE ==  "Choque ",]$CLASE = "Choque"
+
+clase_unique <- data.frame(unique(all_data_variables$CLASE))
+names (clase_unique) = c("CLASE")
+
+clase_unique  %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F, position = "left", font_size = 12)
+
+```
+<br>
+```{r}
+
+```
+
+##### 4.3.4 Variable: HORA
+Vamos a convertir los 2 formatos hora ("08:45 AM" y "8:15:00 p. m.") hallados en la fuente en formato "24H": Del "00" a "23" para poder analizar la variable HORA
+<br>
+```{r HORA, echo=FALSE}
+
+# Funciones de substring: left 
+left = function(text, num_char) {
+  substr(text, 1, num_char)
+}
+# Funciones de substring: mid 
+mid = function(text, start_num, num_char) {
+  substr(text, start_num, start_num + num_char - 1)
+}
+# Funciones de substring: right 
+right = function(text, num_char) {
+  substr(text, nchar(text) - (num_char-1), nchar(text))
+}
+ 
+# Se estandariza el formato HORA a AM/PM
+
+all_data_variables$HORA <- gsub(":00 a. m.", " AM", all_data_variables$HORA)
+all_data_variables$HORA <- gsub(":00 p. m.", " PM", all_data_variables$HORA)
+
+# Posición en la cadena de texto de los ":" puntos
+all_data_variables$POS_DOS_PTOS <-  str_locate(all_data_variables$HORA, ":")
+
+# Substring hasta los ":" puntos
+all_data_variables$HOUR_HH <- substring(all_data_variables$HORA, 1, ((all_data_variables$POS_DOS_PTOS[,1]) - 1))
+all_data_variables$HOUR_HH_ORI <- all_data_variables$HOUR_HH
+# Substring del AM/PM
+all_data_variables$AM_PM <- right(all_data_variables$HORA, 2)
+
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "1" | all_data_variables$HOUR_HH == "01")  & all_data_variables$AM_PM == "AM", "01", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "1" | all_data_variables$HOUR_HH == "01")  & all_data_variables$AM_PM == "PM", "13", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "2" | all_data_variables$HOUR_HH == "02")  & all_data_variables$AM_PM == "AM", "02", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "2" | all_data_variables$HOUR_HH == "02")  & all_data_variables$AM_PM == "PM", "14", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "3" | all_data_variables$HOUR_HH == "03")  & all_data_variables$AM_PM == "AM", "03", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "3" | all_data_variables$HOUR_HH == "03")  & all_data_variables$AM_PM == "PM", "15", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "4" | all_data_variables$HOUR_HH == "04")  & all_data_variables$AM_PM == "AM", "04", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "4" | all_data_variables$HOUR_HH == "04")  & all_data_variables$AM_PM == "PM", "16", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "5" | all_data_variables$HOUR_HH == "05")  & all_data_variables$AM_PM == "AM", "05", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "5" | all_data_variables$HOUR_HH == "05")  & all_data_variables$AM_PM == "PM", "17", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "6" | all_data_variables$HOUR_HH == "06")  & all_data_variables$AM_PM == "AM", "06", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "6" | all_data_variables$HOUR_HH == "06")  & all_data_variables$AM_PM == "PM", "18", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "7" | all_data_variables$HOUR_HH == "07")  & all_data_variables$AM_PM == "AM", "07", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "7" | all_data_variables$HOUR_HH == "07")  & all_data_variables$AM_PM == "PM", "19", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "8" | all_data_variables$HOUR_HH == "08")  & all_data_variables$AM_PM == "AM", "08", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "8" | all_data_variables$HOUR_HH == "08")  & all_data_variables$AM_PM == "PM", "20", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "9" | all_data_variables$HOUR_HH == "09")  & all_data_variables$AM_PM == "AM", "09", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse((all_data_variables$HOUR_HH == "9" | all_data_variables$HOUR_HH == "09")  & all_data_variables$AM_PM == "PM", "21", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse(all_data_variables$HOUR_HH == "10" & all_data_variables$AM_PM == "PM", "22", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse(all_data_variables$HOUR_HH == "11" & all_data_variables$AM_PM == "PM", "23", all_data_variables$HOUR_HH)
+all_data_variables$HOUR_HH <- ifelse(all_data_variables$HOUR_HH == "12" & all_data_variables$AM_PM == "AM", "00", all_data_variables$HOUR_HH)
+
+all_data_variables$HORA_24H <- all_data_variables$HOUR_HH
+
+# table(all_data_variables$HOUR_HH_ORI, all_data_variables$AM_PM)
+# table(all_data_variables$HOUR_HH, all_data_variables$AM_PM)
+
+# all_data_variables$HORA_HH <- sub("", ":", all_data_variables$HORA)
+# all_data_variables$HORA_24H <- format(strptime(all_data_variables$HORA, "%I:%M:%S %p"), "%H:%M:%S")
+
+# hora_unique <- data.frame(unique(all_data_variables$HOUR_HH))
+# names (hora_unique) = c("HORA")
+# 
+# hora_unique  %>%
+#   kable() %>%
+#   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = F, position = "left", font_size = 12)
+
+```
+<br>
+
+```{r}
+
+```
+
+##### 4.4 Variables de análisis
+Finalmente las variables seleccionadas para el análisis de los datos en la App en Shiny son:
+
+<br>
+```{r variables, echo=FALSE}
+
+all_data_variables_sel <- subset(all_data_variables,select = c("HORA_24H","DIA_NOMBRE","PERIODO","CLASE","GRAVEDAD","COMUNA_STD","MES","DIA","LATITUD","LONGITUD","FECHA"))
+
+# Se asignan los nombres de acuerdo a la programación de la aplicación Shiny
+names(all_data_variables_sel) <- c("RANGO_HORA","DIA_NOMBRE","PERIODO","CLASE","GRAVEDAD","COMUNA","MES","DIA","LATITUD","LONGITUD","FECHA")
+
+all_data_variables_sel_2 <- subset(all_data_variables_sel, subset = (COMUNA != "No Data"))
+
+
+
+#names(all_data_variables)
+head(all_data_variables_sel_2) %>%
+  kable() %>%
+  kable_styling( bootstrap_options = c("striped", "hover", "condensed", full_width = F), font_size = 12, position = "left")
+
+```
+
+```{r download, echo=FALSE}
+# Descarga a CSV los datos que hacen parte del análisis en Shinny
+
+
+
+write.table(all_data_variables_sel, dec = ".", sep="\t", row.names = FALSE , col.names = TRUE, file = "accidentalidad_2014_2019.csv")
+
+```
+
+### 5. Evidencias
+<br>
+
+#### 5.1 Mapa de calor de accidentalidad por año y mes
+A continuación vemos una representación gráfica por años en la que se visualizan los meses donde más se focalizan los accidentes en Medellín:
+<br>
+Más accidentes:
+<br>
+ - Mayo: El 2do mes más lluvioso del año
+<br>
+ - Agosto: Coincide con la Feria de las Flores
+<br>
+ - Mientras que Enero es el menos con menos accidentes lo cual coincide con temporada de vacaciones y el mes menos lluvioso del año
+
+```{r headmap, echo=FALSE}
+all_data_2014_2018 <- subset(all_data, subset = (PERIODO!="2019"))
+
+all_data_regs_2014_2018 <- table(all_data_2014_2018$PERIODO,all_data_2014_2018$MES)
+
+image(t(all_data_regs_2014_2018[1:5,]),
+      col = hcl.colors(12, palette = "Reds", rev = TRUE),
+      xlab = "Meses",
+      ylab = "Años",
+      axes=F,
+      main = "Accidentalidad - Mapa de calor",
+      cex.main=0.9,
+      cex.lab = 0.8)
+
+axis(1, at=seq(0, 1, length.out = 12), labels = c("Ene", "Feb", "Mar", "Abr", "May", "Jun",
+                                                  "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"),las=2, cex.axis = 0.8)
+axis(2, at=seq(0, 1, length.out = 5 ), labels = rownames(all_data_regs_2014_2018), las=1, cex.axis = 0.8)
+
+```
+
+#### 5.2 Tendencia por horas de la semana
+
+Se puede apreciar que la mayor cantidad de accidentes coincide con los horarios cercanos a pico y placa: De las 06 a las 08 de la mañana y de las 17 a las 18 horas en la tarde, luego sigue la franja del medio día entre las 12 y las 14 horas (Hora de almuerzo).
+
+```{r , echo=FALSE}
+all_data_variables_sel_3 <-  all_data_variables_sel %>%
+  group_by(RANGO_HORA, DIA_NOMBRE)%>%
+  summarise(
+    Frecuencia = n(),
+  )
+
+ggplot(data = all_data_variables_sel_3, aes(y= Frecuencia, x = RANGO_HORA, color=factor(DIA_NOMBRE)))+ 
+              geom_point()+
+              theme_bw()+
+              labs(color = "Día Semana", x="Hora")+
+              scale_x_discrete("Hora 24H", limits=names(all_data_variables_sel_3$RANGO_HORA))
+
+```
+
+
+
+
+
+#### 5.3 Accidentalidad por mes
+A continuación un gráfico de barras apilado por años y meses:
+
+```{r, echo=FALSE}
+
+all_data_variables_sel_2 <- subset(all_data_variables_sel, subset = (PERIODO<2019))
+
+all_data_variables_sel_2 <- all_data_variables_sel_2%>%
+  group_by(MES, PERIODO)%>%
+  summarise(
+    Accidentes = n(),)
+
+ggplot(data= all_data_variables_sel_2, aes(x=MES, y=Accidentes, fill=PERIODO)) +
+    geom_bar(stat="identity")+
+    theme_minimal()+
+    # theme_bw()+
+    coord_flip() +
+    theme(axis.text.x = element_text(angle = 0, hjust = 1)) +
+    labs(title="Accidentalidad mensual", y = "Número accidentes")+
+    scale_x_discrete("Mes", limits=c(1:12))
+    #geom_text(aes(label=Accidentes), vjust=-0.5, color="white", size = 5)
+
+```
+
+#### 5.4 Accidentalidad por comuna
+A continuación un gráfico de barras comunas (Se usa la variable COMUNA estandarizda):
+
+```{r, echo=FALSE}
+
+all_data_variables_sel_4 <- all_data_variables_sel%>%
+  group_by(COMUNA)%>%
+  summarise(
+    Accidentes = n(),)
+
+ggplot(data= all_data_variables_sel_4, aes(x=reorder(COMUNA,Accidentes), y=Accidentes))+
+    geom_bar(stat="identity", fill= c("Green","Green","Green","Green","Green","Green","Green","Yellow","Yellow","Yellow","Yellow","Yellow","Orange","Orange","Orange","Orange","Orange","Red","Red","Red","Red","Red"))+
+    theme_minimal()+
+    theme_bw()+
+    coord_flip() +
+    theme(axis.text.x = element_text(angle = 0, hjust = 1)) +
+    labs(title="Accidentalidad por comuna", y = "Número accidentes", x = "Comuna") 
+
+
+```
+
+
+### 6. Conclusiones
+
+<div style="text-align: justify">
+
+Con la información presentada sobre la accidentalidad en la ciudad de Medellin, se logran identificar parametros importantes que sirven de referencia al momento de tomar medidas de precaución frente a este tipo de riesgos, ya que se muestran indicadores de accidentes en diferentes modalidades de tiempo, localización y severidad, los cuales sirven como punto de partida en la definicion de criterios para la articulación de posibles soluciones asociadas a la accidentalidad
+
+La presentación de la información se logra efectuar de forma clara y dinámica, de manera que pueda ser interpretada por la mayoria de las personas de la ciudad de Medellín, ya que son los principales beneficiarios y en primera instancia quienes toman decisiones propias al momento de salir a circular en vehículos dentro de la ciudad de Medellín
+
+La información presentada sobre accidentalidad en la ciudad de Medellin, genera un efecto considerable en cuanto a conocimiento general del comportamiento de los accidentes en la ciudad, y a su vez sirve de herramienta informativa para tomar precauciones al momento de transitar en la ciudad e Medellín, ya sea con o sin un vehículo
+
+<div/>
+
+<br>
+
+```{r, echo=FALSE}
+
+```
+
+### 7. Bibliografía
+
+* El portal de datos de Medellín [Alcaldía de Medellín - OpenData:  Movilidad](https://geomedellin-m-medellin.opendata.arcgis.com/search?tags=movilidad)
+
+* Alcaldía de Medellín: [Secretaría de movilidad de Medellín](https://www.medellin.gov.co/movilidad/cifras-estudios/viewcategory/1872-parque-automotor)
+
+* Periódico El Tiempo: [El Tiempo](https://www.eltiempo.com/colombia/medellin/el-valle-de-aburra-supero-las-900-000-motos-matriculadas-343266)
+
+* Revista Dinero: [Dinero](https://www.dinero.com/economia/articulo/cuantos-carros-y-motos-se-vendieron-en-enero-de-2019/266687)
+
+* Alianza interinstitucional [Medellín cómo vamos](https://www.medellincomovamos.org/la-ciudad/)
+
+* Wikipedia [Barrios de Medellín](https://es.wikipedia.org/wiki/Anexo:Barrios_de_Medell%C3%ADn)
+
+<br>
