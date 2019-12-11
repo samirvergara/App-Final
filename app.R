@@ -13,56 +13,44 @@ library(markdown)
 library(shinyalert)
 library(sqldf)
 
-# setwd("E:/ESTEBAN/DE LA U/02 ESPECIALIZACION/SEMESTRE 1/01 CIENCIA DE LOS DATOS/Shiny/trabajo_final/accidentes")
-
 # ******* CARGA Y LECTURA DE DATOS ***********
 
 datos_accidentes<-readRDS(file="datos.rds", refhook = NULL)
-# opciones_comuna <- read.csv.sql("accidentalidad_2014_2019.csv", "select DISTINCT COMUNA from file", sep=";")
-
 
 # Data frame para leer la información de la hoja "Tendencias", ya que estos datos no dependen de los filtros.
 datos_completos<-subset(datos_accidentes,subset = (datos_accidentes$PERIODO) %in% c(2014,2015,2016,2017,2018,2019))
-
-
-  ### Lee los datos del CSV
-     # datos_accidentes1<-read.csv("accidentalidad_2014_2019.csv", header = TRUE, sep = ";")
-  
-  ### Guardar los datos en el formato comprimido rds para mejorar el rendimiento de la aplicación
-    # saveRDS(datos_accidentes1, file = "datos.rds", ascii = FALSE, version = NULL, compress = TRUE, refhook = NULL)
-  
-  ### Lee los datos del formato rds para optmizar la aplicación
-   
-    # datos_accidentes <- data.frame(read.csv.sql("accidentalidad_2014_2019.csv", "select * from file", sep=";") )
-
-# datos_accidentes<-load("datos2.rds",envir = parent.frame(), verbose = FALSE)
-# datos_accidentes<-datos_accidentes3
 
 
 ### Inicialización de variables
  fechas<-as.Date(datos_accidentes$FECHA)
  fecha_min<-min(fechas)
  fecha_max<-max(fechas)
-# fecha_min<-"01/01/2014"
-# fecha_max<-"30/06/2019"
-
 
 # Listar las comunas
  opciones_comuna<-c("", sort(as.character(unique(datos_accidentes$COMUNA))),"TODAS")
  # opciones_comuna<-c("TODAS","Aranjuez")
 
 youtube_video <- '<iframe width="853" height="480" src="https://www.youtube.com/embed/kUZCrEWzXII" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
+
 style <- "my_css2.css"
+
 footer<-'<div class="row">
-          <div class="col-sm-6">
+
+          <div class="col-sm-1">
+           <b> <p class="footer-company-name">Shiny Web App</p> </b>
+          </div>
+
+          <div class="col-sm-2">
             <p class="footer-links">
         
-              <a href="https://github.com/juanrpo19/trabajo_ciencia_datos.git">Acceder al repositorio de git.</a>
+              <a href="https://github.com/samirvergara/App-Final">Ver archivos fuentes Repositorio GitHub</a>
             </p>
           </div>
-          <div class="col-sm-6">
-            <p class="footer-company-name">Accidentalidad en Medellín</p>
+
+          <div class="col-sm-8">
+            <p class="footer-company-name">Análisis de datos abiertos de accidentalidad en Medellín</p>
           </div>
+
         </div>'
 
 
@@ -104,7 +92,7 @@ ui <- dashboardPage(
                            
                            ### Lista de comunas
                             column(width = 4,
-                                selectInput("lista_comuna","Comuna:",choices =  opciones_comuna),
+                                selectInput("lista_comuna","Comuna:",choices =  opciones_comuna, selected='Aranjuez'),
                                 actionButton("calcular","Calcular")
                             ),
                            
