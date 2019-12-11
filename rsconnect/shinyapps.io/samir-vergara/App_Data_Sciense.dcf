@@ -1,0 +1,12 @@
+name: App_Data_Sciense
+title: App_Data_Sciense
+username:
+account: samir-vergara
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1587933
+bundleId: 2659303
+url: https://samir-vergara.shinyapps.io/App_Data_Sciense/
+when: 1576079632.15109
+asMultiple: FALSE
+asStatic: FALSE
